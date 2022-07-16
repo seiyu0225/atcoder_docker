@@ -37,15 +37,45 @@ template<class T, class U>
 bool chmin(T& a, const U& b) { return (b < a) ? (a = b, true) : false; }
 template<class T, class U>
 bool chmax(T& a, const U& b) { return (b > a) ? (a = b, true) : false; }
-
 template<typename T>istream& operator>>(istream&i,vector<T>&v){rep(j,v.size())i>>v[j];return i;}
 template<typename T>string join(vector<T>&v){stringstream s;rep(i,v.size())s<<' '<<v[i];return s.str().substr(1);}
 template<typename T>ostream& operator<<(ostream&o,vector<T>&v){if(v.size())o<<join(v);return o;}
 template<typename T>string join(vector<vector<T>>&vv){string s="\n";rep(i,vv.size())s+=join(vv[i])+"\n";return s;}
 template<typename T>ostream& operator<<(ostream&o,vector<vector<T>>&vv){if(vv.size())o<<join(vv);return o;}
-template<class T> using pq = priority_queue<T, vector<T>, greater<T>>;
-
 int main() {
-    
+    i64 n, k;
+    cin >> n >> k;
+    vector<int> a(n);
+    if(k * 2 > n) {
+        cout << -1 << endl;
+        return 0;
+    }
+    vector<int> used(n, 0);
+    vector<int> ans(n, -1);
+    rep(i, n) {
+        if(i + k < n) {
+            ans[i] = i + k;
+            used[i + k] = 1;
+        }else break;
+    }
+    int j = 0;
+    // cout << "ans : " << ans << endl;
+    for (int i = 0; i < n; i++) {
+        if (ans[i] != -1)
+            continue;
+        while(j < n and (used[j] == 1 or abs(j - i) < k)) j++;
+        if (j >= n) {
+            // cout << "j : " << j << " break!!!" <<  endl;
+            break;
+        }
+        // cout << "i : " << i << endl;
+        // cout << "j : " << j  <<  endl;
+        ans[i] = j;
+        used[j] = 1;
+        // cout << "ans : " << ans << endl;
+    }
+    for(auto & i : ans)
+        i++;
+    cout << ans << endl;
     return 0;
 }
