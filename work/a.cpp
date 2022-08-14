@@ -45,7 +45,109 @@ template<typename T>string join(vector<vector<T>>&vv){string s="\n";rep(i,vv.siz
 template<typename T>ostream& operator<<(ostream&o,vector<vector<T>>&vv){if(vv.size())o<<join(vv);return o;}
 template<class T> using pq = priority_queue<T, vector<T>, greater<T>>;
 
+
 int main() {
-    
+    int n, m, e;
+    cin >> n >> m >> e;
+
+    vector<int> ul(e);
+    vector<int> vl(e);
+
+    rep(i, e) {
+        cin >> ul[i] >> vl[i];
+        ul[i]--;
+        vl[i]--;
+    }
+
+    int q;
+    cin >> q;
+    vector<int> x(q);
+    set<int> out;
+    cin >> x;
+    for(auto & i : x) i--;
+    for(auto & i : x) out.insert(i);
+    reverse(all(x));
+
+    vector<int> ok(n + m, 0);
+    rep(i, n, n + m) ok[i] = 1;
+    vector<vector<int>> child(n + m);
+    dsu d(n + m);
+    rep(i, n + m) child[i].push_back(i);
+    int ans = 0;
+    rep(i, e) {
+        // cout << "i : " << i << endl;
+        if(out.count(i)) continue;
+        int u = ul[i];
+        int v = vl[i];
+        // cout << "u : " << u << endl;
+        // cout << "v : " << v << endl;
+        if(ok[d.leader(u)] == 1 and ok[d.leader(v)] == 0) swap(u, v);
+        if(ok[d.leader(u)] == 0 and ok[d.leader(v)] == 1) {
+            for(auto j : child[d.leader(u)]) {
+                ok[j] = 1;
+                if(j < n) ans++;
+            }
+            vector<int> & vu = child[d.leader(u)];
+            vector<int> & vv = child[d.leader(v)];
+            if(vu.size() < vv.size()) swap(vu, vv);
+            for(auto& j : vv) {
+                vu.push_back(j);
+            }
+            d.merge(u, v);
+            vv.clear();
+            child[d.leader(u)] = vu;
+        }else{
+            if(d.leader(u) == d.leader(v)) continue;
+            vector<int> & vu = child[d.leader(u)];
+            vector<int> & vv = child[d.leader(v)];
+            if(vu.size() < vv.size()) swap(vu, vv);
+            for(auto& j : vv) {
+                vu.push_back(j);
+            }
+            d.merge(u, v);
+            vv.clear();
+            child[d.leader(u)] = vu;
+        }
+    }
+    vector<int> output;
+    rep(qi, q) {
+        // cout << "qi : " << qi << endl;
+        output.push_back(ans);
+        int i = x[qi];
+        int u = ul[i];
+        int v = vl[i];
+        if(ok[d.leader(u)] == 1 and ok[d.leader(v)] == 0) swap(u, v);
+        if(ok[d.leader(u)] == 0 and ok[d.leader(v)] == 1) {
+            for(auto j : child[d.leader(u)]) {
+                ok[j] = 1;
+                if(j < n) ans++;
+            }
+            vector<int> & vu = child[d.leader(u)];
+            vector<int> & vv = child[d.leader(v)];
+            if(vu.size() < vv.size()) {
+                swap(vu, vv);
+            }
+            for(auto& j : vv) {
+                vu.push_back(j);
+            }
+            d.merge(u, v);
+            vv.clear();
+            child[d.leader(u)] = vu;
+        }else{
+            if(d.leader(u) == d.leader(v)) continue;
+            vector<int> & vu = child[d.leader(u)];
+            vector<int> & vv = child[d.leader(v)];
+            if(vu.size() < vv.size()) swap(vu, vv);
+            for(auto& j : vv) {
+                vu.push_back(j);
+            }
+            d.merge(u, v);
+            vv.clear();
+            child[d.leader(u)] = vu;
+        }
+    }
+    reverse(all(output));
+    for(auto i : output) cout << i << endl;
+
     return 0;
 }

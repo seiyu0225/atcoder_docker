@@ -2,6 +2,7 @@
 work/atcoder/
 work/boost/
 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

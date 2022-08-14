@@ -3,12 +3,14 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**", "${workspaceFolder}/work/atcoder/", "${workspaceFolder}/work/boost/"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/work/atcoder/",
+                "${workspaceFolder}/work/boost/"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
-            "cppStandard": "gnu++14",
+            "cppStandard": "c++17",
             "intelliSenseMode": "linux-gcc-x64"
         }
     ],
