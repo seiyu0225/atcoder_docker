@@ -45,109 +45,62 @@ template<typename T>string join(vector<vector<T>>&vv){string s="\n";rep(i,vv.siz
 template<typename T>ostream& operator<<(ostream&o,vector<vector<T>>&vv){if(vv.size())o<<join(vv);return o;}
 template<class T> using pq = priority_queue<T, vector<T>, greater<T>>;
 
+const i64 INF = 1e18;
+i64 op(i64 a, i64 b) {
+    return max(a, b);
+}
+
+i64 e() {
+    return -INF;
+}
 
 int main() {
-    int n, m, e;
-    cin >> n >> m >> e;
+    int n, c;
+    cin >> n >> c;
+    vector<pair<i64, i64>> xv;
+    rep(i, n) {
+        i64 x, v;
+        cin >> x >> v;
+        xv.emplace_back(x, v);
+    }
+    vector<pair<i64, i64>> xv_rev = xv;
+    reverse(all(xv_rev));
+    for(auto & p : xv_rev) p.first = c - p.first;
 
-    vector<int> ul(e);
-    vector<int> vl(e);
+    i64 ans = 0;
 
-    rep(i, e) {
-        cin >> ul[i] >> vl[i];
-        ul[i]--;
-        vl[i]--;
+    vector<i64> val_sum(n), val_sum_rev(n);
+    i64 sum = 0;
+    for(int i = 0; i < n; i++) {
+        sum += xv[i].second;
+        val_sum[i] = sum - xv[i].first;
+        chmax(ans, val_sum[i]);
     }
 
-    int q;
-    cin >> q;
-    vector<int> x(q);
-    set<int> out;
-    cin >> x;
-    for(auto & i : x) i--;
-    for(auto & i : x) out.insert(i);
-    reverse(all(x));
+    sum = 0;
+    for(int i = n - 1; i >= 0; i--) {
+        sum += xv[i].second;
+        val_sum_rev[i] = sum - xv[i].first;
+        chmax(ans, val_sum_rev[i]);
+    }
 
-    vector<int> ok(n + m, 0);
-    rep(i, n, n + m) ok[i] = 1;
-    vector<vector<int>> child(n + m);
-    dsu d(n + m);
-    rep(i, n + m) child[i].push_back(i);
-    int ans = 0;
-    rep(i, e) {
-        // cout << "i : " << i << endl;
-        if(out.count(i)) continue;
-        int u = ul[i];
-        int v = vl[i];
-        // cout << "u : " << u << endl;
-        // cout << "v : " << v << endl;
-        if(ok[d.leader(u)] == 1 and ok[d.leader(v)] == 0) swap(u, v);
-        if(ok[d.leader(u)] == 0 and ok[d.leader(v)] == 1) {
-            for(auto j : child[d.leader(u)]) {
-                ok[j] = 1;
-                if(j < n) ans++;
-            }
-            vector<int> & vu = child[d.leader(u)];
-            vector<int> & vv = child[d.leader(v)];
-            if(vu.size() < vv.size()) swap(vu, vv);
-            for(auto& j : vv) {
-                vu.push_back(j);
-            }
-            d.merge(u, v);
-            vv.clear();
-            child[d.leader(u)] = vu;
-        }else{
-            if(d.leader(u) == d.leader(v)) continue;
-            vector<int> & vu = child[d.leader(u)];
-            vector<int> & vv = child[d.leader(v)];
-            if(vu.size() < vv.size()) swap(vu, vv);
-            for(auto& j : vv) {
-                vu.push_back(j);
-            }
-            d.merge(u, v);
-            vv.clear();
-            child[d.leader(u)] = vu;
-        }
+    segtree<i64, op, e> seg(val_sum_rev);
+    rep(i, n) {
+        seg.set(n - i - 1, 0);
+        i64 now_ans = val_sum[i] - xv[i].first;
+        now_ans += seg.all_prod();
+        chmax(ans, now_ans);
     }
-    vector<int> output;
-    rep(qi, q) {
-        // cout << "qi : " << qi << endl;
-        output.push_back(ans);
-        int i = x[qi];
-        int u = ul[i];
-        int v = vl[i];
-        if(ok[d.leader(u)] == 1 and ok[d.leader(v)] == 0) swap(u, v);
-        if(ok[d.leader(u)] == 0 and ok[d.leader(v)] == 1) {
-            for(auto j : child[d.leader(u)]) {
-                ok[j] = 1;
-                if(j < n) ans++;
-            }
-            vector<int> & vu = child[d.leader(u)];
-            vector<int> & vv = child[d.leader(v)];
-            if(vu.size() < vv.size()) {
-                swap(vu, vv);
-            }
-            for(auto& j : vv) {
-                vu.push_back(j);
-            }
-            d.merge(u, v);
-            vv.clear();
-            child[d.leader(u)] = vu;
-        }else{
-            if(d.leader(u) == d.leader(v)) continue;
-            vector<int> & vu = child[d.leader(u)];
-            vector<int> & vv = child[d.leader(v)];
-            if(vu.size() < vv.size()) swap(vu, vv);
-            for(auto& j : vv) {
-                vu.push_back(j);
-            }
-            d.merge(u, v);
-            vv.clear();
-            child[d.leader(u)] = vu;
-        }
+
+    segtree<i64, op, e> seg_rev(val_sum);
+    rep(i, n) {
+        seg_rev.set(n - i - 1, 0);
+        i64 now_ans = val_sum_rev[i] - xv_rev[i].first;
+        now_ans += seg_rev.all_prod();
+        chmax(ans, now_ans);
     }
-    reverse(all(output));
-    for(auto i : output) cout << i << endl;
+
+    cout << ans << endl;
 
     return 0;
 }

@@ -28,14 +28,22 @@ class Solver:
         self.K = K
         self.C = C
         self.LIM = K * 100
+        self.cand = [50, 55, 60, 70, 80, 90]
+        self.comp_set = set()
+        self._init_comp_set()
+
+    def _init_comp_set(self):
+        for i in range(self.N):
+            for j in range(self.N):
+                if self.C[i][j] != 0:
+                    self.comp_set.add((i, j))
 
     def _move(self, lim=None):
         if lim is None:
-            lim = self.K * 50
+            lim = self.K * random.choice(self.cand)
         moves = []
         for _ in range(lim):
-            i = random.randint(0, self.N - 1)
-            j = random.randint(0, self.N - 1)
+            (i, j) = random.sample(self.comp_set, 1)[0]
             if self.C[i][j] == 0:
                 continue
             v = random.choice(self.VECS)
@@ -47,6 +55,8 @@ class Solver:
                 continue
             self.C[i2][j2] = self.C[i][j]
             self.C[i][j] = 0
+            self.comp_set.remove((i, j))
+            self.comp_set.add((i2, j2))
             moves.append([i, j, i2, j2])
         return moves
 
@@ -80,15 +90,19 @@ class Solver:
                 i2 += v[0]
                 j2 += v[1]
 
-        for i in range(self.N):
-            for j in range(self.N):
-                if self.C[i][j] in (0, self.USED):
-                    continue
-                for v in [[0, 1], [1, 0]]:
-                    if can_connect(i, j, v):
-                        do_connect(i, j, v)
-                        if len(connects) >= lim:
-                            return connects
+        computers = []
+        for p in self.comp_set:
+            computers.append(p)
+        random.shuffle(computers)
+        
+        for i, j in computers:
+            if self.C[i][j] in (0, self.USED):
+                continue
+            for v in [[0, 1], [1, 0]]:
+                if can_connect(i, j, v):
+                    do_connect(i, j, v)
+                    if len(connects) >= lim:
+                        return connects
         return connects
 
     def solve(self):
@@ -182,26 +196,30 @@ def main():
     max_score = 0
     global max_res
     score_list = []
+    solve_time = 0
+    calc_time = 0
+    cnt = 0
     while True:
-        # print("inin")
         end_time = time.time()
-        if start_time + 20 > end_time:
+        if start_time + 2.5 > end_time:
             now_c = deepcopy(C)
             solver = Solver(N, K, now_c)
+            b = time.time()
             now_res = solver.solve()
+            solve_time += time.time() - b
+            b = time.time()
             now_score = calc_score(N, K, deepcopy(C), now_res)
-            # print("now_score : ", now_score)
+            calc_time += time.time() - b
             score_list.append(now_score)
-            # with open ("./scire_out.txt", 'a') as f:
-            #     print(f"Score = {now_score}", file=f)
             if max_score < now_score:
                 max_res = now_res
                 max_score = now_score
+            cnt+= 1
         else:
             break
 
     print_answer(max_res)
-    print(sorted(score_list))
+    # print(max_score)
 
 if __name__ == "__main__":
     main()
